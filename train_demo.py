@@ -31,16 +31,17 @@ elif FLAGS.rel_rep_model == "emc":
     relation_encoder = EntityMarkerClsEncoder()
 else:
     raise NotImplementedError
-# bert_model = BertModel.from_pretrained(FLAGS.bert_model)
-bert_model = AlbertModel.from_pretrained(FLAGS.bert_model)
+bert_model = BertModel.from_pretrained(FLAGS.bert_model)
+# bert_model = AlbertModel.from_pretrained(FLAGS.bert_model)
 
-# tokenizer = BertTokenizer.from_pretrained(
-#     FLAGS.bert_model, do_basic_tokenize=False)
-tokenizer = AlbertTokenizer.from_pretrained(
+tokenizer = BertTokenizer.from_pretrained(
     FLAGS.bert_model, do_basic_tokenize=False)
+# tokenizer = AlbertTokenizer.from_pretrained(
+#     FLAGS.bert_model, do_basic_tokenize=False)
 tokenizer.add_special_tokens({"additional_special_tokens":[FLAGS.e11,FLAGS.e12,FLAGS.e21,FLAGS.e22]})
 bert_model.resize_token_embeddings(len(tokenizer))
 
+# ckpt_file_path = "./checkpoint/fewrel/ipl.layer{}-{}".format(FLAGS.layer,"20-2-13")
 ckpt_file_path = "./checkpoint/fewrel/ipl.layer{}".format(FLAGS.layer)
 print("#######################################")
 print(ckpt_file_path)
@@ -84,7 +85,7 @@ framework = FewShotREFramework(
 # sentence_encoder = CNNSentenceEncoder(
 #     train_data_loader.word_vec_mat, max_length)
 if FLAGS.mode == "train":
-    framework.train(model, model_name, FLAGS.batch_size, 10, N, K, 1,
+    framework.train(model, model_name, FLAGS.batch_size, 5, N, K, 1,
                     learning_rate=FLAGS.learning_rate, weight_decay=FLAGS.l2_reg_lambda, optimizer=Adam, ckpt_file=ckpt_file_path)
 
 else:
