@@ -16,7 +16,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import InstanceTransformer
+from model.interact_proto import InstanceTransformer, InteractiveContrastiveNet
 
 
 model_name = 'bert'
@@ -38,7 +38,8 @@ tokenizer = BertTokenizer.from_pretrained(
     FLAGS.bert_model, do_basic_tokenize=False)
 # tokenizer = AlbertTokenizer.from_pretrained(
 #     FLAGS.bert_model, do_basic_tokenize=False)
-tokenizer.add_special_tokens({"additional_special_tokens":[FLAGS.e11,FLAGS.e12,FLAGS.e21,FLAGS.e22]})
+tokenizer.add_special_tokens(
+    {"additional_special_tokens": [FLAGS.e11, FLAGS.e12, FLAGS.e21, FLAGS.e22]})
 bert_model.resize_token_embeddings(len(tokenizer))
 
 # ckpt_file_path = "./checkpoint/fewrel/ipl.layer{}-{}".format(FLAGS.layer,"20-2-13")
@@ -61,7 +62,7 @@ test_data_loader = JSONFileDataLoader(
 gpu_aval = torch.cuda.is_available()
 
 
-model = InstanceTransformer(tokenizer, bert_model,
+model = InteractiveContrastiveNet(tokenizer, bert_model,
                             relation_encoder, max_length)
 if os.path.exists(ckpt_file_path):
     if FLAGS.paral_cuda[0] >= 0:
