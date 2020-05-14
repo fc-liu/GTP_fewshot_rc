@@ -12,6 +12,7 @@ import prettytable as pt
 import utils
 
 gpu_aval = torch.cuda.is_available()
+device = torch.device("cuda:"+str(FLAGS.paral_cuda[0]))
 
 
 class FewShotREModel(nn.Module):
@@ -91,16 +92,16 @@ class FewShotREFramework:
         else:
             return x.item()
 
-    def predict(self, model, support, query, B, N, K, Q, label):
+    # def predict(self, model, support, query, B, N, K, Q, label):
 
-        support = utils.convert_batch_to_features(model.tokenizer, support)
-        query = utils.convert_batch_to_features(model.tokenizer, query)
-        logits, pred = model(support, query, B, N, K, N*Q)
+    #     # support = utils.convert_batch_to_features(model.tokenizer, support)
+    #     # query = utils.convert_batch_to_features(model.tokenizer, query)
+    #     logits, pred = model(support, query, B, N, K, N*Q)
 
-        # batch_samples, seg_ids, mask = utils.convert_batch_to_pair_features(
-        #     model.tokenizer, support, query, B)
-        # logits, pred = model(batch_samples, seg_ids, mask, B, N, K, N*Q)
-        return logits, pred
+    #     # batch_samples, seg_ids, mask = utils.convert_batch_to_pair_features(
+    #     #     model.tokenizer, support, query, B)
+    #     # logits, pred = model(batch_samples, seg_ids, mask, B, N, K, N*Q)
+    #     return logits, pred
 
     def train(self,
               model,
@@ -168,10 +169,16 @@ class FewShotREFramework:
         iter_sample = 0.0
         for it in range(start_iter, start_iter + train_iter):
             scheduler.step()
-            support, query, label = self.train_data_loader.next_batch(
-                B, N_for_train, K, Q)
-            logits, pred = self.predict(
-                model, support, query, B, N_for_train, K, Q, label)
+            support, query, label = next(self.train_data_loader)
+            # logits, pred = self.predict(
+            #     model, support, query, B, N_for_train, K, Q, label)
+            label = label.to(device)
+            support = [support['word'].to(device), support['pos1'].to(device),
+                       support['pos2'].to(device), support['mask'].to(device)]
+            query = [query['word'].to(device), query['pos1'].to(device),
+                     query['pos2'].to(device), query['mask'].to(device)]
+            logits, pred = model(
+                support, query, B, N_for_train, K, N_for_train*Q)
             loss = model.loss(logits, label)
             right = model.accuracy(pred, label)
             optimizer.zero_grad()
@@ -252,9 +259,16 @@ class FewShotREFramework:
         iter_sample = 0.0
         with torch.no_grad():
             for it in range(eval_iter):
-                support, query, label = eval_dataset.next_batch(B, N, K, Q)
-                logits, pred = self.predict(
-                    model, support, query, B, N, K, Q, label)
+                support, query, label = next(eval_dataset)
+                # logits, pred = self.predict(
+                #     model, support, query, B, N, K, Q, label)
+                label = label.to(device)
+                support = [support['word'].to(device), support['pos1'].to(device),
+                           support['pos2'].to(device), support['mask'].to(device)]
+                query = [query['word'].to(device), query['pos1'].to(device),
+                         query['pos2'].to(device), query['mask'].to(device)]
+                logits, pred = model(support, query, B, N, K, N*Q)
+
                 # logit = logits.detach().cpu().numpy()
                 right = model.accuracy(pred, label)
                 iter_right += self.item(right.data)

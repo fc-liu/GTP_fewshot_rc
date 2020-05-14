@@ -21,7 +21,7 @@ def parse_args():
                         type=str, help="Path of train data")
     parser.add_argument("--ckpt_dir", default="checkpoint/semeval_pre_train/",
                         type=str, help="Path of train data")
-    parser.add_argument("--ckpt_file", default="checkpoint/semeval_pre_train/best.pth",
+    parser.add_argument("--ckpt_name", default="ipl",
                         type=str, help="Path of train data")
     parser.add_argument("--fewrel_ckpt_file", default="checkpoint/fewrel/bert_mg_1.pth",
                         type=str, help="Path of train data")
@@ -48,26 +48,21 @@ def parse_args():
     #                     type=str, help="oov token")
     # parser.add_argument("--pad", default="[PAD]",
     #                     type=str, help="pad token")
-    
+
     # albert special tokens
     parser.add_argument("--unk", default="[unk]",
                         type=str, help="oov token")
     parser.add_argument("--pad", default="[pad]",
                         type=str, help="pad token")
+    parser.add_argument("--cls", default="[CLS]",
+                        type=str, help="pad token")
+    parser.add_argument("--sep", default="[SEP]",
+                        type=str, help="pad token")
+
 
     parser.add_argument("--bert_model", default="bert-large-cased",
                         type=str, help="bert model")
-
-
-    
     # Model Hyper-parameters
-    
-
-    parser.add_argument("--reproc_data", default=False,
-                        type=bool, help="reprocess data")
-
-
-    
     parser.add_argument("--mode", default="train",
                         type=str, help="train or eval")
     parser.add_argument("--rel_rep_model", default="em",
@@ -75,6 +70,8 @@ def parse_args():
     parser.add_argument("--N", default=5,
                         type=int, help="few-shot N")
     parser.add_argument("--K", default=5,
+                        type=int, help="few-shot K")
+    parser.add_argument("--Q", default=1,
                         type=int, help="few-shot K")
     # parser.add_argument("--bert_vocab", default="bert-base-uncased/bert-base-uncased-vocab.txt",
     #                     type=str, help="bert vocab")

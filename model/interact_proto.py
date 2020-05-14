@@ -71,14 +71,14 @@ class InteractiveContrastiveNet(framework.FewShotREModel):
         # (B, tot_Q, D)
         batch_query = query.view(B, total_Q, self.instance_emb_size)
 
-        # if self.seg_idxs is None or K != self.K or N != self.N:
-        #     seg_idxs = torch.arange(N).expand(K, N).t().reshape(-1)
-        #     seg_idxs = torch.cat(
-        #         (seg_idxs, self.q_seg_idx))
-        #     self.seg_idxs = seg_idxs.expand(
-        #         B, N*(K)+1).cuda(FLAGS.paral_cuda[0])
-        # seg_emb = self.seg_embedding(self.seg_idxs)  # (B, N*K+1, seg_emb_D)
-        # seg_emb = self.seg_norm(seg_emb)
+        if self.seg_idxs is None or K != self.K or N != self.N:
+            seg_idxs = torch.arange(N).expand(K, N).t().reshape(-1)
+            seg_idxs = torch.cat(
+                (seg_idxs, self.q_seg_idx))
+            self.seg_idxs = seg_idxs.expand(
+                B, N*(K)+1).cuda(FLAGS.paral_cuda[0])
+        seg_emb = self.seg_embedding(self.seg_idxs)  # (B, N*K+1, seg_emb_D)
+        seg_emb = self.seg_norm(seg_emb)
 
         # pos_emb = self.pos_embedding(self.pos_idxs)
         logits_list = []
@@ -89,7 +89,7 @@ class InteractiveContrastiveNet(framework.FewShotREModel):
             instances = torch.cat(
                 (batch_support, sing_query), dim=2)  # (B, N, K+1, D)
             instances = instances.reshape(B, N*(K+1), -1)
-            # instances = torch.cat((instances, seg_emb), dim=-1)
+            instances = torch.cat((instances, seg_emb), dim=-1)
             # (B,N*K+2, hidden_size)
 
             input_emb = instances

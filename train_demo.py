@@ -3,7 +3,7 @@ from configure import FLAGS
 import sklearn.exceptions
 import warnings
 import utils
-from dataloader.fewrel_data_loader import JSONFileDataLoader
+from dataloader.fewrel_data_loader import get_loader
 from framework import FewShotREFramework
 import sys
 # from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM, BertForSequenceClassification
@@ -31,7 +31,7 @@ elif FLAGS.rel_rep_model == "emc":
     relation_encoder = EntityMarkerClsEncoder()
 else:
     raise NotImplementedError
-bert_model = BertModel.from_pretrained(FLAGS.bert_model)
+bert_model = BertModel.from_pretrained(FLAGS.bert_model,output_attentions=True)
 # bert_model = AlbertModel.from_pretrained(FLAGS.bert_model)
 
 tokenizer = BertTokenizer.from_pretrained(
@@ -43,7 +43,7 @@ tokenizer.add_special_tokens(
 bert_model.resize_token_embeddings(len(tokenizer))
 
 # ckpt_file_path = "./checkpoint/fewrel/ipl.layer{}-{}".format(FLAGS.layer,"20-2-13")
-ckpt_file_path = "./checkpoint/fewrel/ipl.layer{}".format(FLAGS.layer)
+ckpt_file_path = "./checkpoint/fewrel/{}".format(FLAGS.ckpt_name)
 print("#######################################")
 print(ckpt_file_path)
 # ckpt_file_path = FLAGS.semeval_ckpt_file+FLAGS.rel_rep_model
@@ -53,16 +53,25 @@ print("{}-way-{}-shot Few-Shot Relation Classification".format(N, K))
 print("Model: {}".format(model_name))
 
 max_length = FLAGS.max_sentence_length
-train_data_loader = JSONFileDataLoader(
-    './data/train.json', './data/glove.6B.50d.json', max_length=max_length, case_sensitive=True, reprocess=FLAGS.reproc_data, bertTokenizer=tokenizer, na_rate=FLAGS.na_rate)
-val_data_loader = JSONFileDataLoader(
-    './data/val_wiki.json', './data/glove.6B.50d.json', max_length=max_length, case_sensitive=True, reprocess=FLAGS.reproc_data, bertTokenizer=tokenizer, na_rate=FLAGS.na_rate)
-test_data_loader = JSONFileDataLoader(
-    './data/val_pubmed.json', './data/glove.6B.50d.json', max_length=max_length, case_sensitive=True, reprocess=FLAGS.reproc_data, bertTokenizer=tokenizer, na_rate=FLAGS.na_rate)
+# train_data_loader = JSONFileDataLoader(
+#     './data/train.json', './data/glove.6B.50d.json', max_length=max_length, case_sensitive=True, reprocess=FLAGS.reproc_data, bertTokenizer=tokenizer, na_rate=FLAGS.na_rate)
+# val_data_loader = JSONFileDataLoader(
+#     './data/val_wiki.json', './data/glove.6B.50d.json', max_length=max_length, case_sensitive=True, reprocess=FLAGS.reproc_data, bertTokenizer=tokenizer, na_rate=FLAGS.na_rate)
+# test_data_loader = JSONFileDataLoader(
+#     './data/val_pubmed.json', './data/glove.6B.50d.json', max_length=max_length, case_sensitive=True, reprocess=FLAGS.reproc_data, bertTokenizer=tokenizer, na_rate=FLAGS.na_rate)
+
+train_data_loader = get_loader(
+    './data/train.json', tokenizer, FLAGS.N, FLAGS.K, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+val_data_loader = get_loader(
+    './data/val.json', tokenizer, FLAGS.N, FLAGS.K, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+test_data_loader = get_loader(
+    './data/val_pubmed.json', tokenizer, FLAGS.N, FLAGS.K, FLAGS.Q, FLAGS.batch_size, num_workers=2)
 gpu_aval = torch.cuda.is_available()
 
 
-model = InteractiveContrastiveNet(tokenizer, bert_model,
+# model = InteractiveContrastiveNet(tokenizer, bert_model,
+#                                   relation_encoder, max_length)
+model = InstanceTransformer(tokenizer, bert_model,
                             relation_encoder, max_length)
 if os.path.exists(ckpt_file_path):
     if FLAGS.paral_cuda[0] >= 0:

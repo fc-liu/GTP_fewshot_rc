@@ -93,7 +93,26 @@ def convert_batch_to_features(tokenizer, batch_samples):
     sentences = batch_samples['word']
     pos1 = batch_samples['pos1']
     pos2 = batch_samples['pos2']
-    mask = batch_samples['mask']
+    batch = []
+    for i in range(len(pos1)):
+        batch.append([sentences[i], pos1[i], pos2[i]])
+
+    tokens, pos1, pos2, mask = bert_tokenize_index_and_mask(
+        tokenizer, batch)
+    if gpu_aval and FLAGS.use_gpu:
+        tokens = torch.LongTensor(tokens).to(FLAGS.paral_cuda[0])
+        pos1 = torch.LongTensor(pos1).to(FLAGS.paral_cuda[0])
+        pos2 = torch.LongTensor(pos2).to(FLAGS.paral_cuda[0])
+        mask = torch.Tensor(mask).to(FLAGS.paral_cuda[0])
+
+    return (tokens, pos1, pos2, mask)
+
+
+def convert_batch_tokens_to_features(tokenizer, batch_tokens):
+    global gpu_aval
+    sentences = batch_samples['word']
+    pos1 = batch_samples['pos1']
+    pos2 = batch_samples['pos2']
     batch = []
     for i in range(len(pos1)):
         batch.append([sentences[i], pos1[i], pos2[i]])
@@ -118,7 +137,6 @@ def bert_tokenize_index_and_mask(tokenizer, batch_samples, require_wp_tokens=Fal
     pos2 = samples[:, 2]
     pos1 = pos1.tolist()
     pos2 = pos2.tolist()
-    batch_size = sentences.shape[0]
     removed_sentence_id = []
     batch_seg = []
     for i in range(len(sentences)):
@@ -127,7 +145,6 @@ def bert_tokenize_index_and_mask(tokenizer, batch_samples, require_wp_tokens=Fal
         tokens = []
         tokens.append("[CLS]")
         for token in sentence:
-            token_i = token
             if not token:
                 continue
             token = tokenizer.tokenize(token)
@@ -140,7 +157,6 @@ def bert_tokenize_index_and_mask(tokenizer, batch_samples, require_wp_tokens=Fal
                     pos2[i][0] = len(tokens)
                 elif token[0] == FLAGS.e22:
                     pos2[i][-1] = len(tokens)+1
-                
 
                 tokens.extend(token)
             else:

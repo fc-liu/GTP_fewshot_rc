@@ -24,6 +24,7 @@ def extract_entity(x, e):
         print(e)
     return e_hiddens
 
+
 class EntityMarkerEncoder(nn.Module):
     def __init__(self):
         super(EntityMarkerEncoder, self).__init__()
@@ -35,9 +36,9 @@ class EntityMarkerEncoder(nn.Module):
         hidden1 = extract_entity(token_embs, pos1)
         hidden2 = extract_entity(token_embs, pos2)
         hidden1 = self.active(hidden1)
-        hidden1 = self.layerNorm(hidden1)
+        # hidden1 = self.layerNorm(hidden1)
         hidden2 = self.active(hidden2)
-        hidden2 = self.layerNorm(hidden2)
+        # hidden2 = self.layerNorm(hidden2)
         return (hidden1, hidden2)
 
 
@@ -52,6 +53,8 @@ class EntityMarkerClsEncoder(nn.Module):
 
 
 first = True
+
+
 class RRModel(nn.Module):
     """
     Relation Represemtation Model
@@ -84,10 +87,11 @@ class RRModel(nn.Module):
             first = False
         # with torch.no_grad():
         encoded_layers = self.sentence_encoder(
-            tokens)
+            tokens, attention_mask=mask)
         # print("###################size:{}###################".format(
         #     encoded_layers[0]))
-        encoded_layers = encoded_layers[0]#[layer]
+        atts = encoded_layers[-1][-1]
+        encoded_layers = encoded_layers[0]  # [layer]
         # mask[:,0]=0
         # mask[:,-1]=0
         relation_embs = self.rel_encoder(
