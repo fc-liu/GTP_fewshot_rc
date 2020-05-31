@@ -149,8 +149,13 @@ class BertEMDataset(data.Dataset):
         # d['mask'].append(mask)
 
     def __getitem__(self, index):
-        sampled_classes = random.sample(self.classes, self.N+1)
-        target_classes = sampled_classes[:-1]
+        try:
+            sampled_classes = random.sample(self.classes, self.N+1)
+            target_classes = sampled_classes[:-1]
+        except Exception:
+            sampled_classes = random.sample(self.classes, self.N)
+            target_classes = sampled_classes
+
         na_classes = sampled_classes[-1]
 
         support_set = {'word': [], 'pos1': [], 'pos2': [], 'mask': []}

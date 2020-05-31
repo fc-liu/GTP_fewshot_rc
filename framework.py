@@ -12,7 +12,7 @@ import prettytable as pt
 import utils
 
 gpu_aval = torch.cuda.is_available()
-device = torch.device("cuda:"+str(FLAGS.paral_cuda[0]))
+# device = torch.device("cuda:"+str(FLAGS.paral_cuda[0]))
 
 
 class FewShotREModel(nn.Module):
@@ -25,6 +25,7 @@ class FewShotREModel(nn.Module):
         nn.Module.__init__(self)
         self.sentence_encoder = sentence_encoder
         self.cost = nn.CrossEntropyLoss()
+        # self.cost=nn.MultiMarginLoss(margin=1)
 
     def forward(self, support, query, N, K, Q):
         '''
@@ -117,8 +118,8 @@ class FewShotREFramework:
               lr_step_size=1000,
               weight_decay=FLAGS.l2_reg_lambda,
               train_iter=100000,
-              val_iter=300,
-              val_step=100,
+              val_iter=500,
+              val_step=500,
               test_iter=3000,
               cuda=True,
               pretrain_model=None,
@@ -168,15 +169,18 @@ class FewShotREFramework:
         iter_right = 0.0
         iter_sample = 0.0
         for it in range(start_iter, start_iter + train_iter):
-            scheduler.step()
             support, query, label = next(self.train_data_loader)
+            sup_ids = support['word'].numpy()
+            sup_mask = support['mask'].numpy()
+            que_word = query['word'].numpy()
+            que_mask = query['mask'].numpy()
             # logits, pred = self.predict(
             #     model, support, query, B, N_for_train, K, Q, label)
-            label = label.to(device)
-            support = [support['word'].to(device), support['pos1'].to(device),
-                       support['pos2'].to(device), support['mask'].to(device)]
-            query = [query['word'].to(device), query['pos1'].to(device),
-                     query['pos2'].to(device), query['mask'].to(device)]
+            label = label.to(FLAGS.paral_cuda[0])
+            support = [support['word'].to(FLAGS.paral_cuda[0]), support['pos1'].to(FLAGS.paral_cuda[0]),
+                       support['pos2'].to(FLAGS.paral_cuda[0]), support['mask'].to(FLAGS.paral_cuda[0])]
+            query = [query['word'].to(FLAGS.paral_cuda[0]), query['pos1'].to(FLAGS.paral_cuda[0]),
+                     query['pos2'].to(FLAGS.paral_cuda[0]), query['mask'].to(FLAGS.paral_cuda[0])]
             logits, pred = model(
                 support, query, B, N_for_train, K, N_for_train*Q)
             loss = model.loss(logits, label)
@@ -185,6 +189,7 @@ class FewShotREFramework:
             loss.backward()
             nn.utils.clip_grad_norm(parameters_to_optimize, 5)
             optimizer.step()
+            scheduler.step()
 
             iter_loss += self.item(loss.data)
             iter_right += self.item(right.data)
@@ -262,11 +267,11 @@ class FewShotREFramework:
                 support, query, label = next(eval_dataset)
                 # logits, pred = self.predict(
                 #     model, support, query, B, N, K, Q, label)
-                label = label.to(device)
-                support = [support['word'].to(device), support['pos1'].to(device),
-                           support['pos2'].to(device), support['mask'].to(device)]
-                query = [query['word'].to(device), query['pos1'].to(device),
-                         query['pos2'].to(device), query['mask'].to(device)]
+                label = label.to(FLAGS.paral_cuda[0])
+                support = [support['word'].to(FLAGS.paral_cuda[0]), support['pos1'].to(FLAGS.paral_cuda[0]),
+                           support['pos2'].to(FLAGS.paral_cuda[0]), support['mask'].to(FLAGS.paral_cuda[0])]
+                query = [query['word'].to(FLAGS.paral_cuda[0]), query['pos1'].to(FLAGS.paral_cuda[0]),
+                         query['pos2'].to(FLAGS.paral_cuda[0]), query['mask'].to(FLAGS.paral_cuda[0])]
                 logits, pred = model(support, query, B, N, K, N*Q)
 
                 # logit = logits.detach().cpu().numpy()

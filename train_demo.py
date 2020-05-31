@@ -16,7 +16,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import InstanceTransformer, InteractiveContrastiveNet
+from model.interact_proto import InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet
 
 
 model_name = 'bert'
@@ -71,7 +71,9 @@ gpu_aval = torch.cuda.is_available()
 
 # model = InteractiveContrastiveNet(tokenizer, bert_model,
 #                                   relation_encoder, max_length)
-model = InstanceTransformer(tokenizer, bert_model,
+# model = InstanceTransformer(tokenizer, bert_model,
+#                             relation_encoder, max_length)
+model = GlobalTransformedProtoNet(tokenizer, bert_model,
                             relation_encoder, max_length)
 if os.path.exists(ckpt_file_path):
     if FLAGS.paral_cuda[0] >= 0:
@@ -103,22 +105,48 @@ else:
         tabel = pt.PrettyTable(
             ["51_wiki", "55_wiki", "101_wiki", "105_wiki", "51_pubmed", "55_pubmed", "101_pubmed", "105_pubmed"])
         val_step = 1000
+        
+
+        val_data_loader = get_loader(
+            './data/val.json', tokenizer, 5, 1, 1, FLAGS.batch_size, num_workers=2)
         acc1 = framework.eval(model, FLAGS.batch_size, 5, 1, 1,
                               val_step, data_loader=val_data_loader)
+
+        val_data_loader = get_loader(
+            './data/val.json', tokenizer, 5, 5, 1, FLAGS.batch_size, num_workers=2)
         acc2 = framework.eval(model, FLAGS.batch_size, 5, 5, 1,
                               val_step, data_loader=val_data_loader)
+        
+        val_data_loader = get_loader(
+            './data/val.json', tokenizer, 10, 1, 1, FLAGS.batch_size, num_workers=2)
         acc3 = framework.eval(model, FLAGS.batch_size, 10, 1, 1,
                               val_step, data_loader=val_data_loader)
+
+        val_data_loader = get_loader(
+            './data/val.json', tokenizer, 10, 5, 1, FLAGS.batch_size, num_workers=2)
         acc4 = framework.eval(model, FLAGS.batch_size, 10, 5, 1,
                               val_step, data_loader=val_data_loader)
+
+        val_data_loader = get_loader(
+            './data/val_pubmed.json', tokenizer, 5, 1, 1, FLAGS.batch_size, num_workers=2)
         acc5 = framework.eval(model, FLAGS.batch_size, 5, 1, 1,
-                              val_step, data_loader=test_data_loader)
+                              val_step, data_loader=val_data_loader)
+        
+        val_data_loader = get_loader(
+            './data/val_pubmed.json', tokenizer, 5, 5, 1, FLAGS.batch_size, num_workers=2)
         acc6 = framework.eval(model, FLAGS.batch_size, 5, 5, 1,
-                              val_step, data_loader=test_data_loader)
+                              val_step, data_loader=val_data_loader)
+
+        val_data_loader = get_loader(
+            './data/val_pubmed.json', tokenizer, 10, 1, 1, FLAGS.batch_size, num_workers=2)
         acc7 = framework.eval(model, FLAGS.batch_size, 10, 1, 1,
-                              val_step, data_loader=test_data_loader)
+                              val_step, data_loader=val_data_loader)
+
+        val_data_loader = get_loader(
+            './data/val_pubmed.json', tokenizer, 10, 5, 1, FLAGS.batch_size, num_workers=2)
         acc8 = framework.eval(model, FLAGS.batch_size, 10, 5, 1,
-                              val_step, data_loader=test_data_loader)
+                              val_step, data_loader=val_data_loader)
+
         tabel.add_row(
             [round(100*acc1, 4), round(100*acc2, 4), round(100*acc3, 4), round(100*acc4, 4),
              round(100*acc5, 4), round(100*acc6, 4), round(100*acc7, 4), round(100*acc8, 4)])

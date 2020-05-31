@@ -81,6 +81,8 @@ def parse_args():
                         type=int, help="bert layer to use")
     parser.add_argument("--attention_size", default=396,
                         type=int, help="Dimensionality of attention (default: 50)")
+    parser.add_argument("--n_head", default=8,
+                        type=int, help="head number of gtp")
     parser.add_argument("--fewrel_output_size", default=2024,
                         type=int, help="Dimensionality of relation representation (default: 512)")
     # Misc
@@ -106,7 +108,7 @@ def parse_args():
                         type=int, help="Number of checkpoints to store (default: 5)")
     parser.add_argument("--learning_rate", default=1e-5,
                         type=float, help="Which learning rate to start with (Default: 1.0)")
-    parser.add_argument("--decay_rate", default=0.5,
+    parser.add_argument("--decay_rate", default=0.6,
                         type=float, help="Decay rate for learning rate (Default: 0.9)")
 
     parser.add_argument("--use_gpu", default=True,

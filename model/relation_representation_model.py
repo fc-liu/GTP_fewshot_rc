@@ -35,9 +35,9 @@ class EntityMarkerEncoder(nn.Module):
     def forward(self, token_embs, pos1, pos2, mask):
         hidden1 = extract_entity(token_embs, pos1)
         hidden2 = extract_entity(token_embs, pos2)
-        hidden1 = self.active(hidden1)
+        # hidden1 = self.active(hidden1)
         # hidden1 = self.layerNorm(hidden1)
-        hidden2 = self.active(hidden2)
+        # hidden2 = self.active(hidden2)
         # hidden2 = self.layerNorm(hidden2)
         return (hidden1, hidden2)
 
