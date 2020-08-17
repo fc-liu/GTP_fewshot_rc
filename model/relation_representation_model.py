@@ -82,8 +82,8 @@ class RRModel(nn.Module):
         layer = FLAGS.bert_layer
         global first
         if first:
-            print(
-                "#################################layer : {}######### #################".format(layer))
+            # print(
+            #     "#################################layer : {}######### #################".format(layer))
             first = False
         # with torch.no_grad():
         encoded_layers = self.sentence_encoder(

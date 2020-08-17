@@ -58,13 +58,14 @@ class FewShotREModel(nn.Module):
 
 class FewShotREFramework:
 
-    def __init__(self, train_data_loader, val_data_loader, test1_data_loader, test2_data_loader):
+    def __init__(self, train_data_loader_1shot, train_data_loader_5shot, val_data_loader, test1_data_loader, test2_data_loader):
         '''
         train_data_loader: DataLoader for training.
         val_data_loader: DataLoader for validating.
         test_data_loader: DataLoader for testing.
         '''
-        self.train_data_loader = train_data_loader
+        self.train_data_loader_1shot = train_data_loader_1shot
+        self.train_data_loader_5shot = train_data_loader_5shot
         self.val_data_loader = val_data_loader
         self.test1_data_loader = test1_data_loader
         self.test2_data_loader = test2_data_loader
@@ -169,7 +170,14 @@ class FewShotREFramework:
         iter_right = 0.0
         iter_sample = 0.0
         for it in range(start_iter, start_iter + train_iter):
-            support, query, label = next(self.train_data_loader)
+            if it % 2 == 0:
+                train_data_loader = self.train_data_loader_1shot
+                K = 1
+            else:
+                train_data_loader = self.train_data_loader_5shot
+                K = 5
+
+            support, query, label = next(train_data_loader)
             sup_ids = support['word'].numpy()
             sup_mask = support['mask'].numpy()
             que_word = query['word'].numpy()
@@ -190,7 +198,6 @@ class FewShotREFramework:
             nn.utils.clip_grad_norm(parameters_to_optimize, 5)
             optimizer.step()
             scheduler.step()
-
             iter_loss += self.item(loss.data)
             iter_right += self.item(right.data)
             iter_sample += 1
@@ -220,16 +227,16 @@ class FewShotREFramework:
                     [it, round(100*acc1, 4), round(100*acc3, 4)])
                 print(self.tabel)
                 model.train()
-                if acc1 > best_acc:
+                if acc1+acc3 > best_acc:
                     print('Best checkpoint')
                     # if not os.path.exists(ckpt_dir):
                     #     os.makedirs(ckpt_dir)
                     # save_path = os.path.join(ckpt_dir, model_name + ".pth.tar")
                     torch.save({'state_dict': model.state_dict()},
                                ckpt_file_path)
-                    best_acc = acc1
+                    best_acc = acc1+acc3
                 print(
-                    "#################best eval accu: %.4f##################" % best_acc)
+                    "#################best eval accu: %.4f##################" % (best_acc/2))
         print("\n####################\n")
         print("Finish training " + model_name)
         with torch.no_grad():

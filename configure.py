@@ -21,7 +21,7 @@ def parse_args():
                         type=str, help="Path of train data")
     parser.add_argument("--ckpt_dir", default="checkpoint/semeval_pre_train/",
                         type=str, help="Path of train data")
-    parser.add_argument("--ckpt_name", default="ipl",
+    parser.add_argument("--ckpt_name", default="gtp-10-mix15-add12-cos",
                         type=str, help="Path of train data")
     parser.add_argument("--fewrel_ckpt_file", default="checkpoint/fewrel/bert_mg_1.pth",
                         type=str, help="Path of train data")
@@ -59,8 +59,7 @@ def parse_args():
     parser.add_argument("--sep", default="[SEP]",
                         type=str, help="pad token")
 
-
-    parser.add_argument("--bert_model", default="bert-large-cased",
+    parser.add_argument("--bert_model", default="/share/model/bert/cased_L-24_H-1024_A-16",  # default="bert-large-uncased",
                         type=str, help="bert model")
     # Model Hyper-parameters
     parser.add_argument("--mode", default="train",
@@ -115,7 +114,7 @@ def parse_args():
                         type=bool, help="use gpu")
     parser.add_argument("--cuda", default='cuda:2',
                         type=str, help="use cuda")
-    parser.add_argument("--paral_cuda", default=[5], type=int,
+    parser.add_argument("--paral_cuda", default=[0], type=int,
                         help="parallel cuda", nargs='+')
     # Visualization Parameters
     parser.add_argument("--checkpoint_dir", default=None,
@@ -161,14 +160,18 @@ def parse_args():
                         help="description of the model")
     parser.add_argument("--layer", default=1, type=int,
                         help="number of transformer layer")
+
+    parser.add_argument("--test_file", default="data/sample.json", type=str,
+                        help="test file path")
+
     if len(sys.argv) == 0:
         parser.print_help()
         sys.exit(1)
-    print("")
+    # print("")
     args = parser.parse_args()
-    for arg in vars(args):
-        print("{}={}".format(arg.upper(), getattr(args, arg)))
-    print("")
+    # for arg in vars(args):
+    #     print("{}={}".format(arg.upper(), getattr(args, arg)))
+    # print("")
 
     return args
 

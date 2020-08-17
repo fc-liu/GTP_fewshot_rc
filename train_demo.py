@@ -16,7 +16,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet
+from model.interact_proto import InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet, Proto
 
 
 model_name = 'bert'
@@ -31,7 +31,8 @@ elif FLAGS.rel_rep_model == "emc":
     relation_encoder = EntityMarkerClsEncoder()
 else:
     raise NotImplementedError
-bert_model = BertModel.from_pretrained(FLAGS.bert_model,output_attentions=True)
+bert_model = BertModel.from_pretrained(
+    FLAGS.bert_model, output_attentions=True)
 # bert_model = AlbertModel.from_pretrained(FLAGS.bert_model)
 
 tokenizer = BertTokenizer.from_pretrained(
@@ -60,8 +61,16 @@ max_length = FLAGS.max_sentence_length
 # test_data_loader = JSONFileDataLoader(
 #     './data/val_pubmed.json', './data/glove.6B.50d.json', max_length=max_length, case_sensitive=True, reprocess=FLAGS.reproc_data, bertTokenizer=tokenizer, na_rate=FLAGS.na_rate)
 
-train_data_loader = get_loader(
-    './data/train.json', tokenizer, FLAGS.N, FLAGS.K, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+
+# train_data_loader_51 = get_loader(
+#     './data/train.json', tokenizer, 5, 1, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+# train_data_loader_55 = get_loader(
+#     './data/train.json', tokenizer, 5, 5, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+train_data_loader_101 = get_loader(
+    './data/train.json', tokenizer, 10, 1, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+train_data_loader_105 = get_loader(
+    './data/train.json', tokenizer, 10, 5, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+
 val_data_loader = get_loader(
     './data/val.json', tokenizer, FLAGS.N, FLAGS.K, FLAGS.Q, FLAGS.batch_size, num_workers=2)
 test_data_loader = get_loader(
@@ -75,6 +84,8 @@ gpu_aval = torch.cuda.is_available()
 #                             relation_encoder, max_length)
 model = GlobalTransformedProtoNet(tokenizer, bert_model,
                             relation_encoder, max_length)
+# model = Proto(tokenizer, bert_model,
+#               relation_encoder, max_length)
 if os.path.exists(ckpt_file_path):
     if FLAGS.paral_cuda[0] >= 0:
         ckpt = torch.load(ckpt_file_path, map_location=lambda storage,
@@ -93,11 +104,11 @@ if gpu_aval:
 
 
 framework = FewShotREFramework(
-    train_data_loader, val_data_loader, None, test_data_loader)
+    train_data_loader_101, train_data_loader_105, val_data_loader, None, test_data_loader)
 # sentence_encoder = CNNSentenceEncoder(
 #     train_data_loader.word_vec_mat, max_length)
 if FLAGS.mode == "train":
-    framework.train(model, model_name, FLAGS.batch_size, 5, N, K, 1,
+    framework.train(model, model_name, FLAGS.batch_size, 10, N, K, 1,
                     learning_rate=FLAGS.learning_rate, weight_decay=FLAGS.l2_reg_lambda, optimizer=Adam, ckpt_file=ckpt_file_path)
 
 else:
@@ -105,7 +116,6 @@ else:
         tabel = pt.PrettyTable(
             ["51_wiki", "55_wiki", "101_wiki", "105_wiki", "51_pubmed", "55_pubmed", "101_pubmed", "105_pubmed"])
         val_step = 1000
-        
 
         val_data_loader = get_loader(
             './data/val.json', tokenizer, 5, 1, 1, FLAGS.batch_size, num_workers=2)
@@ -116,7 +126,7 @@ else:
             './data/val.json', tokenizer, 5, 5, 1, FLAGS.batch_size, num_workers=2)
         acc2 = framework.eval(model, FLAGS.batch_size, 5, 5, 1,
                               val_step, data_loader=val_data_loader)
-        
+
         val_data_loader = get_loader(
             './data/val.json', tokenizer, 10, 1, 1, FLAGS.batch_size, num_workers=2)
         acc3 = framework.eval(model, FLAGS.batch_size, 10, 1, 1,
@@ -131,7 +141,7 @@ else:
             './data/val_pubmed.json', tokenizer, 5, 1, 1, FLAGS.batch_size, num_workers=2)
         acc5 = framework.eval(model, FLAGS.batch_size, 5, 1, 1,
                               val_step, data_loader=val_data_loader)
-        
+
         val_data_loader = get_loader(
             './data/val_pubmed.json', tokenizer, 5, 5, 1, FLAGS.batch_size, num_workers=2)
         acc6 = framework.eval(model, FLAGS.batch_size, 5, 5, 1,
