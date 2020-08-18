@@ -16,7 +16,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet, Proto
+from model.interact_proto import InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet, Proto, ProtoHATT
 
 
 model_name = 'bert'
@@ -67,7 +67,7 @@ max_length = FLAGS.max_sentence_length
 # train_data_loader_55 = get_loader(
 #     './data/train.json', tokenizer, 5, 5, FLAGS.Q, FLAGS.batch_size, num_workers=2)
 train_data_loader_101 = get_loader(
-    './data/train.json', tokenizer, 20, 1, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+    './data/train.json', tokenizer, 10, 1, FLAGS.Q, FLAGS.batch_size, num_workers=2)
 train_data_loader_105 = get_loader(
     './data/train.json', tokenizer, 10, 5, FLAGS.Q, FLAGS.batch_size, num_workers=2)
 
@@ -82,10 +82,11 @@ gpu_aval = torch.cuda.is_available()
 #                                   relation_encoder, max_length)
 # model = InstanceTransformer(tokenizer, bert_model,
 #                             relation_encoder, max_length)
-# model = GlobalTransformedProtoNet(tokenizer, bert_model,
-#                             relation_encoder, max_length)
-model = Proto(tokenizer, bert_model,
-              relation_encoder, max_length)
+model = GlobalTransformedProtoNet(tokenizer, bert_model,
+                                  relation_encoder, max_length)
+# model = Proto(tokenizer, bert_model,
+#               relation_encoder, max_length)
+# model = ProtoHATT(bert_model, relation_encoder, max_length, 5)
 if os.path.exists(ckpt_file_path):
     if FLAGS.paral_cuda[0] >= 0:
         ckpt = torch.load(ckpt_file_path, map_location=lambda storage,
@@ -108,7 +109,7 @@ framework = FewShotREFramework(
 # sentence_encoder = CNNSentenceEncoder(
 #     train_data_loader.word_vec_mat, max_length)
 if FLAGS.mode == "train":
-    framework.train(model, model_name, FLAGS.batch_size, 20, N, K, 1,
+    framework.train(model, model_name, FLAGS.batch_size, 10, N, K, 1,
                     learning_rate=FLAGS.learning_rate, weight_decay=FLAGS.l2_reg_lambda, optimizer=Adam, ckpt_file=ckpt_file_path)
 
 else:

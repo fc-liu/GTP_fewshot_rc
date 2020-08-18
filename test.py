@@ -13,7 +13,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import GlobalTransformedProtoNet,Proto
+from model.interact_proto import GlobalTransformedProtoNet, Proto, ProtoHATT
 
 
 N = FLAGS.N
@@ -38,10 +38,12 @@ test_data_loader = get_loader(
 gpu_aval = torch.cuda.is_available()
 
 
-model = GlobalTransformedProtoNet(tokenizer, bert_model,
-                                  relation_encoder, max_length)
+# model = GlobalTransformedProtoNet(tokenizer, bert_model,
+#                                   relation_encoder, max_length)
 # model = Proto(tokenizer, bert_model,
 #                                   relation_encoder, max_length)
+model = ProtoHATT(bert_model, relation_encoder, max_length, 5)
+
 if os.path.exists(ckpt_file_path):
     if FLAGS.paral_cuda[0] >= 0:
         ckpt = torch.load(ckpt_file_path, map_location=lambda storage,
