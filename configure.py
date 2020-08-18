@@ -21,7 +21,7 @@ def parse_args():
                         type=str, help="Path of train data")
     parser.add_argument("--ckpt_dir", default="checkpoint/semeval_pre_train/",
                         type=str, help="Path of train data")
-    parser.add_argument("--ckpt_name", default="gtp-10-mix15-add12-cos",
+    parser.add_argument("--ckpt_name", default="bert-em-1shot",
                         type=str, help="Path of train data")
     parser.add_argument("--fewrel_ckpt_file", default="checkpoint/fewrel/bert_mg_1.pth",
                         type=str, help="Path of train data")

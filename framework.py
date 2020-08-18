@@ -41,7 +41,7 @@ class FewShotREModel(nn.Module):
     def loss(self, logits, label):
         '''
         logits: Logits with the size (..., class_num)
-        label: Label with whatever size. 
+        label: Label with whatever size.
         return: [Loss] (A single value)
         '''
         N = logits.size(-1)
@@ -169,13 +169,15 @@ class FewShotREFramework:
         iter_loss = 0.0
         iter_right = 0.0
         iter_sample = 0.0
+        k_bak = K
+
         for it in range(start_iter, start_iter + train_iter):
-            if it % 2 == 0:
-                train_data_loader = self.train_data_loader_1shot
-                K = 1
-            else:
-                train_data_loader = self.train_data_loader_5shot
-                K = 5
+            # if it % 2 == 0:
+            train_data_loader = self.train_data_loader_1shot
+            K = 1
+            # else:
+            #     train_data_loader = self.train_data_loader_5shot
+            #     K = 5
 
             support, query, label = next(train_data_loader)
             sup_ids = support['word'].numpy()
@@ -212,10 +214,8 @@ class FewShotREFramework:
 
             # if (it+1) % 10 == 0:
             #     torch.cuda.empty_cache()
-            if (it+1) % 990 == 0:
-                print("break here")
-
             if (it + 1) % val_step == 0:
+                K = k_bak
                 acc1 = self.eval(model, B, N_for_eval, K, Q,
                                  val_iter, data_loader=self.val_data_loader)
                 # acc2 = self.eval(model, B, N_for_eval, K, Q,
