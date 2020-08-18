@@ -176,12 +176,18 @@ class GlobalTransformedProtoNet(framework.FewShotREModel):
         self.seg_embedding = nn.Embedding(20, self.hidden_size)
         self.sep_emd = nn.Embedding(1, self.hidden_size)
 
-        self.q_seg_idx = torch.LongTensor([19])
         self.seg_idxs = None
         self.drop = nn.Dropout(1-FLAGS.dropout_keep_prob)
         self.layNorm_hidden = nn.LayerNorm(self.hidden_size)
         self.N = 0
         self.K = 0
+        one_hot_size = 21
+        self.pos_idxs = None
+        self.q_seg_idx = torch.LongTensor([one_hot_size-1])
+        pos_label = torch.arange(21)
+        self.one_hot_encoding = torch.nn.functional.one_hot(
+            pos_label, num_classes=21).to(FLAGS.paral_cuda[0]).float()
+        self.map = nn.Linear(self.hidden_size+one_hot_size, self.hidden_size)
         # self.layNorm_out = nn.LayerNorm(self.hidden_size)
 
     def __dist__(self, x, y, dim):
@@ -223,16 +229,25 @@ class GlobalTransformedProtoNet(framework.FewShotREModel):
         # (B, tot_Q, D)
         batch_query = batch_query.view(B, total_Q, self.hidden_size)
 
-        if self.seg_idxs is None or K != self.K or N != self.N:
-            seg_idxs = torch.arange(N).expand(K, N).t().reshape(-1)
-            # seg_idxs = torch.cat(
-            #     (seg_idxs, self.q_seg_idx))
-            # self.seg_idxs = seg_idxs.expand(
-            #     B, N*(K)+1).cuda(FLAGS.paral_cuda[0])
-            self.seg_idxs = seg_idxs.expand(
-                B, N*K).cuda(FLAGS.paral_cuda[0])
-        seg_emb = self.seg_embedding(self.seg_idxs)  # (B, N*K+1, seg_emb_D)
-        seg_emb = self.layNorm_hidden(seg_emb)/15
+        # if self.seg_idxs is None or K != self.K or N != self.N:
+        #     seg_idxs = torch.arange(N).expand(K, N).t().reshape(-1)
+        #     # seg_idxs = torch.cat(
+        #     #     (seg_idxs, self.q_seg_idx))
+        #     # self.seg_idxs = seg_idxs.expand(
+        #     #     B, N*(K)+1).cuda(FLAGS.paral_cuda[0])
+        #     self.seg_idxs = seg_idxs.expand(
+        #         B, N*K).cuda(FLAGS.paral_cuda[0])
+        # seg_emb = self.seg_embedding(self.seg_idxs)  # (B, N*K+1, seg_emb_D)
+        # seg_emb = self.layNorm_hidden(seg_emb)/15
+
+        if self.pos_idxs is None or K != self.K or N != self.N:
+            pos_idxs = torch.arange(N).expand(K, N).t().reshape(-1)
+            pos_idxs = torch.cat(
+                (pos_idxs, self.q_seg_idx))
+            self.pos_idxs = pos_idxs.expand(
+                B, N*(K)+1).cuda(FLAGS.paral_cuda[0])
+        # (B, N*K+1, seg_emb_D)
+        one_hot_pos = self.one_hot_encoding[self.pos_idxs]
 
         # pos_emb = self.pos_embedding(self.pos_idxs)
 
@@ -243,7 +258,8 @@ class GlobalTransformedProtoNet(framework.FewShotREModel):
             batch_support = batch_support
             instances = torch.cat(
                 (batch_support, sing_query), dim=1)  # (B, N*K+1,D)
-            # instances = torch.cat((instances, seg_emb), dim=-1)
+            instances = torch.cat((instances, one_hot_pos), dim=-1)
+            instances = self.map(instances)
             # (B,N*K+2, hidden_size)
 
             input_emb = instances
