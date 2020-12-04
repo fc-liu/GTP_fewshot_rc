@@ -1,6 +1,5 @@
 import argparse
 import sys
-import torch
 
 
 def parse_args():
@@ -21,7 +20,7 @@ def parse_args():
                         type=str, help="Path of train data")
     parser.add_argument("--ckpt_dir", default="checkpoint/semeval_pre_train/",
                         type=str, help="Path of train data")
-    parser.add_argument("--ckpt_name", default="bert-em-1shot",
+    parser.add_argument("--ckpt_name", default="gtp-woseg-sepexcludproto-layhead4",
                         type=str, help="Path of train data")
     parser.add_argument("--fewrel_ckpt_file", default="checkpoint/fewrel/bert_mg_1.pth",
                         type=str, help="Path of train data")
@@ -80,7 +79,7 @@ def parse_args():
                         type=int, help="bert layer to use")
     parser.add_argument("--attention_size", default=396,
                         type=int, help="Dimensionality of attention (default: 50)")
-    parser.add_argument("--n_head", default=8,
+    parser.add_argument("--n_head", default=4,
                         type=int, help="head number of gtp")
     parser.add_argument("--fewrel_output_size", default=2024,
                         type=int, help="Dimensionality of relation representation (default: 512)")
@@ -114,7 +113,7 @@ def parse_args():
                         type=bool, help="use gpu")
     parser.add_argument("--cuda", default='cuda:2',
                         type=str, help="use cuda")
-    parser.add_argument("--paral_cuda", default=[0], type=int,
+    parser.add_argument("--paral_cuda", default=[2], type=int,
                         help="parallel cuda", nargs='+')
     # Visualization Parameters
     parser.add_argument("--checkpoint_dir", default=None,
@@ -138,20 +137,6 @@ def parse_args():
     #                     type=int, help="Dimensionality of relative position embedding (default: 50)")
     # parser.add_argument("--emb_dropout_keep_prob", default=0.7,
     #                     type=float, help="Dropout keep probability of embedding layer (default: 0.7)")
-
-    # hyper-parameter for IMP
-    parser.add_argument("--sigma", default=5.0, type=float,
-                        help="init sigma value")
-    parser.add_argument("--ALPHA", default=1, type=float,
-                        help="alpha value")
-    parser.add_argument("--num_cluster_steps", default=1, type=int,
-                        help="cluster iterater steps")
-    parser.add_argument("--model_name", default="imp",
-                        type=str, help="model name")
-    parser.add_argument("--err_info", default=False,
-                        type=bool, help="output the error information and visualization result")
-    parser.add_argument("--full_model", default="sp",
-                        type=str, help="sp: single proto; mp: multi proto")
     parser.add_argument("--na_rate", default=0, type=float,
                         help="NOTA rate, need to be divided by 5, due to the implement")
     parser.add_argument("--pair", default=True, type=bool,
@@ -163,6 +148,9 @@ def parse_args():
 
     parser.add_argument("--test_file", default="data/sample.json", type=str,
                         help="test file path")
+
+    parser.add_argument("--model_name", default="gtp", type=str,
+                        help="model name")
 
     if len(sys.argv) == 0:
         parser.print_help()
@@ -177,4 +165,4 @@ def parse_args():
 
 
 FLAGS = parse_args()
-FLAGS.ALPHA = torch.Tensor([FLAGS.ALPHA]).cuda(FLAGS.paral_cuda[0])
+# FLAGS.ALPHA = torch.Tensor([FLAGS.ALPHA]).cuda(FLAGS.paral_cuda[0])

@@ -109,11 +109,8 @@ class BertEMDataset(data.Dataset):
                     else:
                         tokens = tokens[min_left:max_right]
                         tokens.insert(0, FLAGS.cls)
-                        pos1[0] = pos1[0]-min_left+1
-                        pos1[-1] = pos1[-1]-min_left+1
-                        pos2[0] = pos2[0]-min_left+1
-                        pos2[-1] = pos2[-1]-min_left+1
-
+                    pos1 = [tokens.index(FLAGS.e11), tokens.index(FLAGS.e12)]
+                    pos2 = [tokens.index(FLAGS.e21), tokens.index(FLAGS.e22)]
                 tokens.append(FLAGS.sep)
 
                 # tokens_dict = self.bertTokenizer.encode_plus(
@@ -194,36 +191,32 @@ class BertEMDataset(data.Dataset):
         return sys.maxsize
 
 
-def compute_max_length(batch_sets):
-    max_length = 0
-    for set_words in batch_sets:
-        for words in set_words['word']:
-            if len(words) > max_length:
-                max_length = len(words)
+# def compute_max_length(batch_sets):
+#     max_length = 0
+#     for set_words in batch_sets:
+#         for words in set_words['word']:
+#             if len(words) > max_length:
+#                 max_length = len(words)
 
-    return max_length
+#     return max_length
 
 
 def idx_and_mask(batch_sets):
     global tokenizer
     # batch_sets = batch_sets.copy()
-    max_length = compute_max_length(batch_sets)
+    # max_length = compute_max_length(batch_sets)
     sets = []
     for set_item in batch_sets:
         set_item = set_item.copy()
         words_list = set_item['word']
         support_word = []
-        for words in words_list:
-            tokens_dict = tokenizer.encode_plus(
-                words, add_special_tokens=False, is_pretokenized=True, max_length=max_length, pad_to_max_length=True)
-            tokens_ids = tokens_dict['input_ids']
-            mask = tokens_dict['attention_mask']
-            tokens_ids = torch.tensor(tokens_ids).long()
-            mask = torch.tensor(mask).long()
-            support_word.append(tokens_ids)
-            set_item['mask'].append(mask)
-
-        set_item['word'] = support_word
+        tokens_dict = tokenizer(
+            words_list, add_special_tokens=False, is_split_into_words=True, return_tensors='pt', truncation=True,max_length=FLAGS.max_sentence_length, padding=True)
+        tokens_ids = tokens_dict['input_ids']
+        mask = tokens_dict['attention_mask']
+        
+        set_item['mask']=mask
+        set_item['word'] = tokens_ids
         sets.append(set_item)
 
     return sets

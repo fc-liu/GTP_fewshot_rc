@@ -148,7 +148,7 @@ class FewShotREFramework:
         ckpt_file_path = ckpt_file
         parameters_to_optimize = model.parameters()
         optimizer = optimizer(parameters_to_optimize,
-                              learning_rate, weight_decay=weight_decay)
+                              learning_rate, weight_decay=FLAGS.l2_reg_lambda)
         scheduler = optim.lr_scheduler.StepLR(
             optimizer, step_size=lr_step_size, gamma=FLAGS.decay_rate)
 

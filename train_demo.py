@@ -16,7 +16,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet, Proto, ProtoHATT
+from model.interact_proto import GlobalTransformedProtoNet_new, InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet, Proto, ProtoHATT, GlobalTransformedProtoNet_onehot, GlobalTransformedProtoNet_all_query, GlobalTransformedProtoNet_proto_tag, GlobalTransformedProtoNet_proto_tag_cos
 
 
 model_name = 'bert'
@@ -82,11 +82,31 @@ gpu_aval = torch.cuda.is_available()
 #                                   relation_encoder, max_length)
 # model = InstanceTransformer(tokenizer, bert_model,
 #                             relation_encoder, max_length)
-model = GlobalTransformedProtoNet(tokenizer, bert_model,
-                                  relation_encoder, max_length)
+
 # model = Proto(tokenizer, bert_model,
 #               relation_encoder, max_length)
 # model = ProtoHATT(bert_model, relation_encoder, max_length, 5)
+if FLAGS.model_name == 'gtp':
+    model = GlobalTransformedProtoNet(tokenizer, bert_model,
+                                      relation_encoder, max_length)
+elif FLAGS.model_name == "onehot":
+    model = GlobalTransformedProtoNet_onehot(tokenizer, bert_model,
+                                             relation_encoder, max_length)
+elif FLAGS.model_name == "all":
+    model = GlobalTransformedProtoNet_all_query(
+        tokenizer, bert_model, relation_encoder, max_length)
+
+elif FLAGS.model_name == "tag":
+    model = GlobalTransformedProtoNet_proto_tag(
+        tokenizer, bert_model, relation_encoder, max_length)
+elif FLAGS.model_name == "tag_cos":
+    model = GlobalTransformedProtoNet_proto_tag_cos(
+        tokenizer, bert_model, relation_encoder, max_length)
+elif FLAGS.model_name == "discrim":
+    model = GlobalTransformedProtoNet(tokenizer, bert_model,
+                                      relation_encoder, max_length)
+else:
+    raise Exception("no such model name:{}" % FLAGS.model_name)
 if os.path.exists(ckpt_file_path):
     if FLAGS.paral_cuda[0] >= 0:
         ckpt = torch.load(ckpt_file_path, map_location=lambda storage,
