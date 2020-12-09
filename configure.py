@@ -20,7 +20,9 @@ def parse_args():
                         type=str, help="Path of train data")
     parser.add_argument("--ckpt_dir", default="checkpoint/semeval_pre_train/",
                         type=str, help="Path of train data")
-    parser.add_argument("--ckpt_name", default="gtp-woseg-sepexcludproto-layhead4",
+    # parser.add_argument("--ckpt_name", default="gtp-woseg-sepexcludproto-layhead4",
+    #                     type=str, help="Path of train data")
+    parser.add_argument("--ckpt_name", default="discrim",
                         type=str, help="Path of train data")
     parser.add_argument("--fewrel_ckpt_file", default="checkpoint/fewrel/bert_mg_1.pth",
                         type=str, help="Path of train data")
@@ -149,7 +151,7 @@ def parse_args():
     parser.add_argument("--test_file", default="data/sample.json", type=str,
                         help="test file path")
 
-    parser.add_argument("--model_name", default="gtp", type=str,
+    parser.add_argument("--model_name", default="discrim", type=str,
                         help="model name")
 
     if len(sys.argv) == 0:

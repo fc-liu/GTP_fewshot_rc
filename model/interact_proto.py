@@ -329,20 +329,23 @@ class GlobalTransformedProtoNet_new(framework.FewShotREModel):
         batch_query = batch_query.view(B, total_Q, self.hidden_size)
 
         # (B,N*K+1, hidden_size)
-        input_emb = batch_support
+        input_emb = batch_support.clone()
+
         input_emb = self.drop(input_emb)
         # hidden = input_emb
-        hidden = input_emb.transpose_(1, 0)  # (N*K+1, B, hidden_size)
-        hidden = self.transformer(input_emb)  # (B,N*K+1, hidden_size)
-        hidden = hidden.transpose_(1, 0)  # (B,N*K+1, hidden_size)
+        hidden = input_emb.transpose_(1, 0)  # (N*K, B, hidden_size)
+        hidden = self.transformer(input_emb)  # (B,N*K, hidden_size)
+        hidden = hidden.transpose_(1, 0)  # (B,N*K, hidden_size)
         # hidden = self.layNorm_hidden(hidden)
         # hidden =self.drop(hidden)
+        hidden = hidden+batch_support
         support = hidden.reshape(B, N, K, -1)  # (B, N, K, D)
         # support = support[:, :, :, :]
-        support = torch.mean(support, 2)
-        # support = self.layNorm_hidden(support)
+        support = self.layNorm_hidden(support)
         # batch_query = self.layNorm_hidden(batch_query)
         support = self.drop(support)
+        support = torch.mean(support, 2)
+
         batch_query = self.drop(batch_query)
         logits = -self.__batch_dist__(support, batch_query)  # (B, total_q, N)
         _, pred = torch.max(logits.view(-1, N), 1)

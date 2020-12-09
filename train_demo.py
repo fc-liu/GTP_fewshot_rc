@@ -103,7 +103,7 @@ elif FLAGS.model_name == "tag_cos":
     model = GlobalTransformedProtoNet_proto_tag_cos(
         tokenizer, bert_model, relation_encoder, max_length)
 elif FLAGS.model_name == "discrim":
-    model = GlobalTransformedProtoNet(tokenizer, bert_model,
+    model = GlobalTransformedProtoNet_new(tokenizer, bert_model,
                                       relation_encoder, max_length)
 else:
     raise Exception("no such model name:{}" % FLAGS.model_name)
