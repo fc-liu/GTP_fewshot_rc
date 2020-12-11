@@ -22,7 +22,7 @@ def parse_args():
                         type=str, help="Path of train data")
     # parser.add_argument("--ckpt_name", default="gtp-woseg-sepexcludproto-layhead4",
     #                     type=str, help="Path of train data")
-    parser.add_argument("--ckpt_name", default="discrim",
+    parser.add_argument("--ckpt_name", default="multi",
                         type=str, help="Path of train data")
     parser.add_argument("--fewrel_ckpt_file", default="checkpoint/fewrel/bert_mg_1.pth",
                         type=str, help="Path of train data")
@@ -115,7 +115,7 @@ def parse_args():
                         type=bool, help="use gpu")
     parser.add_argument("--cuda", default='cuda:2',
                         type=str, help="use cuda")
-    parser.add_argument("--paral_cuda", default=[2], type=int,
+    parser.add_argument("--paral_cuda", default=[5], type=int,
                         help="parallel cuda", nargs='+')
     # Visualization Parameters
     parser.add_argument("--checkpoint_dir", default=None,
@@ -151,7 +151,7 @@ def parse_args():
     parser.add_argument("--test_file", default="data/sample.json", type=str,
                         help="test file path")
 
-    parser.add_argument("--model_name", default="discrim", type=str,
+    parser.add_argument("--model_name", default="multi", type=str,
                         help="model name")
 
     if len(sys.argv) == 0:

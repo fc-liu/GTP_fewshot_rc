@@ -13,8 +13,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import GlobalTransformedProtoNet_new, GlobalTransformedProtoNet, Proto, ProtoHATT, GlobalTransformedProtoNet_onehot, GlobalTransformedProtoNet_all_query, GlobalTransformedProtoNet_proto_tag, GlobalTransformedProtoNet_proto_tag_cos
-
+from model.interact_proto import GlobalTransformedProtoNet_three, GlobalTransformedProtoNet_new, GlobalTransformedProtoNet, Proto, ProtoHATT, GlobalTransformedProtoNet_onehot, GlobalTransformedProtoNet_all_query, GlobalTransformedProtoNet_proto_tag, GlobalTransformedProtoNet_proto_tag_cos
 
 N = FLAGS.N
 K = FLAGS.K
@@ -59,6 +58,9 @@ elif FLAGS.model_name == "tag_cos":
 elif FLAGS.model_name == "discrim":
     model = GlobalTransformedProtoNet_new(tokenizer, bert_model,
                                           relation_encoder, max_length)
+elif FLAGS.model_name == "multi":
+    model = GlobalTransformedProtoNet_three(tokenizer, bert_model,
+                                            relation_encoder, max_length)
 
 else:
     raise Exception("no such model name:{}" % FLAGS.model_name)

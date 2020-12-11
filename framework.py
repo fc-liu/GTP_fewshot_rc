@@ -172,7 +172,7 @@ class FewShotREFramework:
         k_bak = K
 
         for it in range(start_iter, start_iter + train_iter):
-            if it % 2 == 0:
+            if it % 2 == 1:
                 train_data_loader = self.train_data_loader_1shot
                 K = 1
             else:
