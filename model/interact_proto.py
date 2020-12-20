@@ -9,7 +9,7 @@ from model.relation_representation_model import RRModel
 # from model.utils import *
 import json
 import os
-from .transformer import GlobalTransformerEncoderLayer
+from .transformer import GlobalTransformerEncoderLayer, NoIntraLayer, NoIntraLayer, NoGlobalLayer
 
 
 class InteractiveContrastiveNet(framework.FewShotREModel):
@@ -1035,6 +1035,91 @@ class GlobalTransformedProtoNet_three(framework.FewShotREModel):
 
         # (B,N*K+1, hidden_size)
         input_emb = batch_support.clone()
+
+        hidden = self.drop(input_emb)
+        # hidden = input_emb
+        hidden = self.transformer(hidden)  # (B,N*K, hidden_size)
+        # hidden = self.layNorm_hidden(hidden)
+        # hidden =self.drop(hidden)
+        # hidden = hidden+batch_support
+        support = hidden.reshape(B, N, K, -1)  # (B, N, K, D)
+        # support = support[:, :, :, :]
+        support = self.layNorm_hidden(support)
+        # batch_query = self.layNorm_hidden(batch_query)
+        support = self.drop(support)
+        support = torch.mean(support, 2)
+
+        batch_query = self.drop(batch_query)
+        logits = -self.__batch_dist__(support, batch_query)  # (B, total_q, N)
+        _, pred = torch.max(logits.view(-1, N), 1)
+        return logits, pred
+
+
+class GlobalTransformedProtoNet_proto_three(framework.FewShotREModel):
+    def __init__(self, tokenizer, embedder, rel_rep_model, max_length):
+        super(GlobalTransformedProtoNet_proto_three, self).__init__(None)
+        self.tokenizer = tokenizer
+        self.rr_model = RRModel(embedder, rel_rep_model)
+        self.hidden_size = self.rr_model.output_size
+        # self.hidden_size = self.instance_emb_size+self.seg_num_emb
+
+        encoder_layer = GlobalTransformerEncoderLayer(
+            d_model=self.hidden_size, nhead=FLAGS.n_head)
+
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer, num_layers=FLAGS.layer)
+        self.seg_embedding = nn.Embedding(20, self.hidden_size)
+        self.sep_emd = nn.Embedding(1, self.hidden_size)
+
+        self.seg_idxs = None
+        self.drop = nn.Dropout(1-FLAGS.dropout_keep_prob)
+        self.layNorm_hidden = nn.LayerNorm(self.hidden_size)
+        self.N = 0
+        self.K = 0
+        # self.layNorm_out = nn.LayerNorm(self.hidden_size)
+
+    def __dist__(self, x, y, dim):
+        # return -(x*y).sum(dim)
+        return (torch.pow(x - y, 2)).sum(dim)
+
+    def __batch_dist__(self, S, Q):
+        return self.__dist__(S.unsqueeze(1), Q.unsqueeze(2), 3)
+
+    def encoder(self, tokens, pos1, pos2, mask):
+
+        hidden = self.rr_model(tokens, pos1, pos2, mask)
+        # hidden = self.drop(hidden)
+        # hidden = self.FC(hidden)
+        # hidden = torch.tanh(hidden)
+        return hidden
+
+    def forward(self, support, query, B, N, K, total_Q):
+        """
+        batch_samples: B*Q*N*K*seq_length
+        """
+        batch_support = self.encoder(*support)
+        batch_query = self.encoder(*query)  # B*total_q, D
+        # support = self.layNorm(support)
+        # query = self.layNorm(query)
+
+        # (B*N,K,D)
+        batch_support = batch_support.view(B*N, K, self.hidden_size)
+        # sep_emb = self.sep_emd(torch.zeros(
+        #     B*N, 1).long().to(FLAGS.paral_cuda[0]))
+        # K += 1
+
+        # # (B, N, K, D)
+        # batch_support = torch.cat((sep_emb, batch_support), dim=1).view(
+        #     B, N, K, self.hidden_size)
+        batch_support = batch_support.view(B, N, K, self.hidden_size)
+        # (B, tot_Q, D)
+        batch_query = batch_query.view(B, total_Q, self.hidden_size)
+
+        batch_proto = torch.mean(batch_support, dim=2, keepdim=True)
+        batch_support = torch.cat([batch_proto, batch_support], dim=2)
+        K += 1
+        # (B,N*K+1, hidden_size)
+        input_emb = batch_support
 
         hidden = self.drop(input_emb)
         # hidden = input_emb

@@ -16,7 +16,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import GlobalTransformedProtoNet_three, GlobalTransformedProtoNet_new, InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet, Proto, ProtoHATT, GlobalTransformedProtoNet_onehot, GlobalTransformedProtoNet_all_query, GlobalTransformedProtoNet_proto_tag, GlobalTransformedProtoNet_proto_tag_cos
+from model.interact_proto import GlobalTransformedProtoNet_proto_three, GlobalTransformedProtoNet_three, GlobalTransformedProtoNet_new, InstanceTransformer, InteractiveContrastiveNet, GlobalTransformedProtoNet, Proto, ProtoHATT, GlobalTransformedProtoNet_onehot, GlobalTransformedProtoNet_all_query, GlobalTransformedProtoNet_proto_tag, GlobalTransformedProtoNet_proto_tag_cos
 
 
 model_name = 'bert'
@@ -72,9 +72,9 @@ train_data_loader_105 = get_loader(
     './data/train.json', tokenizer, 10, 5, FLAGS.Q, FLAGS.batch_size, num_workers=2)
 
 val_data_loader = get_loader(
-    './data/val.json', tokenizer, FLAGS.N, FLAGS.K, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+    './data/val_pubmed.json', tokenizer, 10, 5, FLAGS.Q, FLAGS.batch_size, num_workers=2)
 test_data_loader = get_loader(
-    './data/val_pubmed.json', tokenizer, FLAGS.N, FLAGS.K, FLAGS.Q, FLAGS.batch_size, num_workers=2)
+    './data/val_pubmed.json', tokenizer, 10, 1, FLAGS.Q, FLAGS.batch_size, num_workers=2)
 gpu_aval = torch.cuda.is_available()
 
 
@@ -94,6 +94,13 @@ elif FLAGS.model_name == "onehot":
                                              relation_encoder, max_length)
 elif FLAGS.model_name == "all":
     model = GlobalTransformedProtoNet_all_query(
+        tokenizer, bert_model, relation_encoder, max_length)
+elif FLAGS.model_name == "proto_three":
+    model = GlobalTransformedProtoNet_proto_three(
+        tokenizer, bert_model, relation_encoder, max_length)
+
+elif FLAGS.model_name == "proto":
+    model = Proto(
         tokenizer, bert_model, relation_encoder, max_length)
 
 elif FLAGS.model_name == "tag":

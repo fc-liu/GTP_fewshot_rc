@@ -13,7 +13,7 @@ import time
 import numpy as np
 import torch
 import prettytable as pt
-from model.interact_proto import GlobalTransformedProtoNet_three, GlobalTransformedProtoNet_new, GlobalTransformedProtoNet, Proto, ProtoHATT, GlobalTransformedProtoNet_onehot, GlobalTransformedProtoNet_all_query, GlobalTransformedProtoNet_proto_tag, GlobalTransformedProtoNet_proto_tag_cos
+from model.interact_proto import GlobalTransformedProtoNet_proto_three, GlobalTransformedProtoNet_three, GlobalTransformedProtoNet_new, GlobalTransformedProtoNet, Proto, ProtoHATT, GlobalTransformedProtoNet_onehot, GlobalTransformedProtoNet_all_query, GlobalTransformedProtoNet_proto_tag, GlobalTransformedProtoNet_proto_tag_cos
 
 N = FLAGS.N
 K = FLAGS.K
@@ -33,19 +33,26 @@ ckpt_file_path = "./checkpoint/fewrel/{}".format(FLAGS.ckpt_name)
 max_length = FLAGS.max_sentence_length
 
 test_data_loader = get_loader(
-    FLAGS.test_file, tokenizer, num_workers=1)
+    FLAGS.test_file, tokenizer, num_workers=2)
 gpu_aval = torch.cuda.is_available()
 
 
 if FLAGS.model_name == 'gtp':
     model = GlobalTransformedProtoNet(tokenizer, bert_model,
                                       relation_encoder, max_length)
+elif FLAGS.model_name == "proto":
+    model = Proto(
+        tokenizer, bert_model, relation_encoder, max_length)
+
 # model = Proto(tokenizer, bert_model,
 #               relation_encoder, max_length)
 # model = ProtoHATT(bert_model, relation_encoder, max_length, 5)
 elif FLAGS.model_name == "onehot":
     model = GlobalTransformedProtoNet_onehot(tokenizer, bert_model,
                                              relation_encoder, max_length)
+elif FLAGS.model_name == "proto_three":
+    model = GlobalTransformedProtoNet_proto_three(
+        tokenizer, bert_model, relation_encoder, max_length)
 elif FLAGS.model_name == "all":
     model = GlobalTransformedProtoNet_all_query(
         tokenizer, bert_model, relation_encoder, max_length)

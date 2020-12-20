@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from allennlp.modules.attention.bilinear_attention import BilinearAttention
 from pytorch_pretrained_bert import BertForMaskedLM, BertModel, BertTokenizer
 from torch import nn as nn
 

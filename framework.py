@@ -70,7 +70,7 @@ class FewShotREFramework:
         self.test1_data_loader = test1_data_loader
         self.test2_data_loader = test2_data_loader
         self.tabel = pt.PrettyTable(
-            ["step", "val_wiki", "val_pubmed"])
+            ["step", "pub-10-1", "pub-10-5"])
 
     def __load_model__(self, ckpt):
         '''
@@ -216,15 +216,15 @@ class FewShotREFramework:
             #     torch.cuda.empty_cache()
             if (it + 1) % val_step == 0:
                 K = k_bak
-                acc1 = self.eval(model, B, N_for_eval, K, Q,
+                acc1 = self.eval(model, B, 10, 5, Q,
                                  val_iter, data_loader=self.val_data_loader)
                 # acc2 = self.eval(model, B, N_for_eval, K, Q,
                 #                  val_iter, data_loader=self.test1_data_loader)
                 acc2 = -1
-                acc3 = self.eval(model, B, N_for_eval, K, Q,
+                acc3 = self.eval(model, B, 10, 1, Q,
                                  val_iter, data_loader=self.test2_data_loader)
                 self.tabel.add_row(
-                    [it, round(100*acc1, 4), round(100*acc3, 4)])
+                    [it, round(100*acc3, 4), round(100*acc1, 4)])
                 print(self.tabel)
                 model.train()
                 if acc1+acc3 > best_acc:
