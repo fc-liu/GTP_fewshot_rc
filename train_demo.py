@@ -6,9 +6,7 @@ import utils
 from dataloader.fewrel_data_loader import get_loader
 from framework import FewShotREFramework
 import sys
-# from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM, BertForSequenceClassification
 from transformers import AlbertTokenizer, AlbertModel, BertTokenizer, BertModel
-# from pytorch_pretrained_bert import BertAdam as Adam
 from torch import nn
 from torch.optim import Adam
 import os
