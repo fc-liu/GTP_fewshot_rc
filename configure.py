@@ -8,21 +8,15 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--name_mapping", default="name_mapping",
-                        type=str, help="mapping file of pretrain class to pretrain entity.")
-    parser.add_argument("--wiki_dir", default="/home/lfc/data/wiki_v1.3/",
-                        type=str, help="directory path of extraced wiki pretrain data")
-    parser.add_argument("--wiki_file", default="/home/lfc/data/wiki_file_c1_filt",
-                        type=str, help="directory path of extraced wiki pretrain data")
 
     # SemEval data
     parser.add_argument("--pretrain_path", default="data/TRAIN_FILE.TXT",
                         type=str, help="Path of train data")
     parser.add_argument("--ckpt_dir", default="checkpoint/semeval_pre_train/",
                         type=str, help="Path of train data")
-    # parser.add_argument("--ckpt_name", default="gtp-woseg-sepexcludproto-layhead4",
+    # parser.add_argument("--ckpt_name", default="gtp-woseg-sepexcludproto-lay1-head1",
     #                     type=str, help="Path of train data")
-    parser.add_argument("--ckpt_name", default="gtp-woseg-sepexcludproto-lay1-head1",
+    parser.add_argument("--ckpt_name", default="three-less-l2-h4",
                         type=str, help="Path of train data")
     parser.add_argument("--fewrel_ckpt_file", default="checkpoint/fewrel/bert_mg_1.pth",
                         type=str, help="Path of train data")
@@ -69,7 +63,7 @@ def parse_args():
                         type=str, help="rm or em or emc")
     parser.add_argument("--N", default=5,
                         type=int, help="few-shot N")
-    parser.add_argument("--K", default=1,
+    parser.add_argument("--K", default=5,
                         type=int, help="few-shot K")
     parser.add_argument("--Q", default=1,
                         type=int, help="few-shot K")
@@ -81,7 +75,7 @@ def parse_args():
                         type=int, help="bert layer to use")
     parser.add_argument("--attention_size", default=396,
                         type=int, help="Dimensionality of attention (default: 50)")
-    parser.add_argument("--n_head", default=1,
+    parser.add_argument("--n_head", default=4,
                         type=int, help="head number of gtp")
     parser.add_argument("--fewrel_output_size", default=2024,
                         type=int, help="Dimensionality of relation representation (default: 512)")
@@ -145,14 +139,18 @@ def parse_args():
                         help="use bert pair")
     parser.add_argument("--desp", default="", type=str,
                         help="description of the model")
-    parser.add_argument("--layer", default=1, type=int,
+    parser.add_argument("--layer", default=2, type=int,
                         help="number of transformer layer")
 
     parser.add_argument("--test_file", default="data/sample.json", type=str,
                         help="test file path")
 
-    parser.add_argument("--model_name", default="gtp", type=str,
+    parser.add_argument("--model_name", default="proto_three", type=str,
                         help="model name")
+
+    parser.add_argument("--abla", default="all", type=str,
+                        help="model name: nointra; nointer; noglobal; all")
+      
 
     if len(sys.argv) == 0:
         parser.print_help()

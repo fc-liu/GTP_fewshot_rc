@@ -9,7 +9,7 @@ from model.relation_representation_model import RRModel
 # from model.utils import *
 import json
 import os
-from .transformer import GlobalTransformerEncoderLayer, NoIntraLayer, NoIntraLayer, NoGlobalLayer
+from .transformer import GlobalTransformerEncoderLayer, NoInterLayer, NoIntraLayer, NoGlobalLayer, OnlyInterLayer, OnlyIntraLayer, OnlyGlobalLayer
 
 
 class InteractiveContrastiveNet(framework.FewShotREModel):
@@ -1063,9 +1063,29 @@ class GlobalTransformedProtoNet_proto_three(framework.FewShotREModel):
         self.hidden_size = self.rr_model.output_size
         # self.hidden_size = self.instance_emb_size+self.seg_num_emb
 
-        encoder_layer = GlobalTransformerEncoderLayer(
-            d_model=self.hidden_size, nhead=FLAGS.n_head)
-
+        if FLAGS.abla == "all":
+            encoder_layer = GlobalTransformerEncoderLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "nointra":
+            encoder_layer = NoIntraLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "nointer":
+            encoder_layer = NoInterLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "noglobal":
+            encoder_layer = NoGlobalLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "intra":
+            encoder_layer = OnlyIntraLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "inter":
+            encoder_layer = OnlyInterLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "global":
+            encoder_layer = OnlyGlobalLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        else:
+            raise Exception("no such layer")
         self.transformer = nn.TransformerEncoder(
             encoder_layer, num_layers=FLAGS.layer)
         self.seg_embedding = nn.Embedding(20, self.hidden_size)

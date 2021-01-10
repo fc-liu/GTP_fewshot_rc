@@ -91,6 +91,7 @@ if gpu_aval:
 def eval(model, data_loader=None):
     res = []
     model.eval()
+    softmax = nn.Softmax(dim=-1)
     with torch.no_grad():
         for support, query in data_loader:
             # logits, pred = self.predict(
@@ -99,8 +100,11 @@ def eval(model, data_loader=None):
                        support['pos2'].to(FLAGS.paral_cuda[0]), support['mask'].to(FLAGS.paral_cuda[0])]
             query = [query['word'].to(FLAGS.paral_cuda[0]), query['pos1'].to(FLAGS.paral_cuda[0]),
                      query['pos2'].to(FLAGS.paral_cuda[0]), query['mask'].to(FLAGS.paral_cuda[0])]
-            _, pred = model(support, query, 1, N, K, 1)
+            logits, pred = model(support, query, 1, N, K, 1)
+            # norm_logits = softmax(logits).detach().cpu().numpy().tolist()
             pred = pred.detach().cpu().item()
+            # if max(logits[0][0]) < -1200:
+            #     pred = -1
             res.append(pred)
 
     return res
