@@ -9,7 +9,7 @@ from model.relation_representation_model import RRModel
 # from model.utils import *
 import json
 import os
-from .transformer import GlobalTransformerEncoderLayer, NoInterLayer, NoIntraLayer, NoGlobalLayer, OnlyInterLayer, OnlyIntraLayer, OnlyGlobalLayer
+from .transformer import ThreeInterTransformerEncoderLayer, ThreeIntraTransformerEncoderLayer, ThreeGlobalTransformerEncoderLayer, GlobalTransformerEncoderLayer, NoInterLayer, NoIntraLayer, NoGlobalLayer, OnlyInterLayer, OnlyIntraLayer, OnlyGlobalLayer
 
 
 class InteractiveContrastiveNet(framework.FewShotREModel):
@@ -1084,8 +1084,18 @@ class GlobalTransformedProtoNet_proto_three(framework.FewShotREModel):
         elif FLAGS.abla == "global":
             encoder_layer = OnlyGlobalLayer(
                 d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "three_global":
+            encoder_layer = ThreeGlobalTransformerEncoderLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "three_inter":
+            encoder_layer = ThreeInterTransformerEncoderLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
+        elif FLAGS.abla == "three_intra":
+            encoder_layer = ThreeIntraTransformerEncoderLayer(
+                d_model=self.hidden_size, nhead=FLAGS.n_head)
         else:
             raise Exception("no such layer")
+
         self.transformer = nn.TransformerEncoder(
             encoder_layer, num_layers=FLAGS.layer)
         self.seg_embedding = nn.Embedding(20, self.hidden_size)
