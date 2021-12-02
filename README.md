@@ -1,7 +1,8 @@
 # Interactive Prototype for Few-Shot Relation Classification
 
-the data is on FewRel official page https://github.com/thunlp/FewRel,
-please download and put into ./data directory.
+## Data preparation
+we use the official FewRel dataset for training and evaluation,
+please download from https://github.com/thunlp/FewRel and put data files into ./data directory.
 
 ## Usage
 ### prerequirement
