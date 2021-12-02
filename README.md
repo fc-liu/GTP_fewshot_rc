@@ -10,13 +10,10 @@ pip install -r requirements.txt
 ```
 ### Train
 ```bash
-python train_demo.py --mode train --layer 1
+python train_demo.py --mode train
 ```
 ### Test
 ```bash
-bash test-${N}-${K}.sh # test on FewRel 2.0 N-way K-shot task
+bash test.sh # replace the file path in this file
 ```
-or
-```bash
-bash test-${N}-${K}-wiki.sh # test on FewRel 1.0 N-way K-shot task
-```
+
