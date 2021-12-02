@@ -1,4 +1,6 @@
-# Interactive Prototype for Few-Shot Relation Classification
+# Global Transformed Prototypical Networks for Few-Shot Relation Classification
+
+Codes for our paper "From Learning-to-Match to Learning-to-Discriminate: Global Prototype Learning for Few-shot Relation Classification"[\[paper\]](https://aclanthology.org/2021.ccl-1.90/)
 
 ## Data preparation
 we use the official FewRel dataset for training and evaluation,
